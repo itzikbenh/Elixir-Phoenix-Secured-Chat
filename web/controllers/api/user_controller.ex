@@ -1,6 +1,6 @@
 defmodule ChatSecured.Api.UserController do
   use ChatSecured.Web, :controller
-  plug :verify_token_and_set_user when action in [:edit, :update, :delete]
+  plug :verify_token_and_set_user when action in [:edit, :update, :update_password, :delete]
 
 
   alias ChatSecured.User
@@ -16,8 +16,6 @@ defmodule ChatSecured.Api.UserController do
     user = Repo.get(User, id)
     render conn, "show.html", user: user
   end
-
-  #%{"user" => %{"email" => "Mike@mike.com", "password" => "[FILTERED]", "password_confirmation" => "[FILTERED]"}}
 
   #This is how the parameters might look like
   #"user" => %{"name" => "Johnny", "password" => "[FILTERED]", "username" => "JohnnyCage"}}
@@ -35,9 +33,6 @@ defmodule ChatSecured.Api.UserController do
     end
   end
 
-  #If token is older than 14 days then verification would fail with reason-expired.
-  @max_age 2 * 7 * 24 * 60 *60 # 14 days
-
   def edit(conn, %{"token" => token}) do
     user = conn.assigns[:current_user]
 
@@ -51,14 +46,39 @@ defmodule ChatSecured.Api.UserController do
     changeset = User.changeset(user, user_params)
 
     case Repo.update(changeset) do
-      {:ok, _user} ->
+      {:ok, user} ->
         conn
         |> put_status(:ok)
-        |> text("Account has been updated successfully")
+        |> render("update.json", %{user: user})
       {:error, changeset} ->
         conn
         |> put_status(:unprocessable_entity)
         |> render(ChatSecured.ChangesetView, "error.json", changeset: changeset)
+    end
+  end
+
+  def update_password(conn, %{"token" => token, "user" => user_params}) do
+    user = conn.assigns[:current_user]
+    pass = user_params["currentPassword"]
+
+    case ChatSecured.Auth.validate_password(conn, user, pass) do
+      {:ok, user, conn} ->
+        changeset = User.update_password_changeset(user, user_params)
+
+        case Repo.update(changeset) do
+          {:ok, user} ->
+            conn
+            |> put_status(:ok)
+            |> render("update_password.json", %{user: user})
+          {:error, changeset} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> render(ChatSecured.ChangesetView, "error.json", changeset: changeset)
+        end
+      {:error, _reason, conn} ->
+        conn
+        |> put_status(:not_found)
+        |> text("invalid password")
     end
   end
 
@@ -71,6 +91,9 @@ defmodule ChatSecured.Api.UserController do
     |> text("You have successfully deleted your account.")
   end
 
+  #If token is older than 14 days then verification would fail with reason-expired.
+  @max_age 2 * 7 * 24 * 60 * 60 # 14 days
+
   def verify_token(conn, %{"token" => token}) do
     #Returns status :ok and the users ID on successful token verification
     case Phoenix.Token.verify(conn, "user", token, max_age: @max_age) do
@@ -82,25 +105,6 @@ defmodule ChatSecured.Api.UserController do
             |> put_status(:ok)
             |> render("user.json", %{token: token, user: user})
           #If user not found then the condition will default to this
-          true ->
-            conn
-            |> put_status(:not_found)
-            |> text("User not found")
-        end
-      {:error, _reason} ->
-        conn
-        |> put_status(:not_acceptable)
-        |> text("token failed verification")
-    end
-  end
-
-  defp verify(conn, token) do
-    #Returns status :ok and the users ID on successful token verification
-    case Phoenix.Token.verify(conn, "user", token, max_age: @max_age) do
-      {:ok, user_id} ->
-        cond do
-          user = Repo.get(User, user_id) ->
-            {conn, user}
           true ->
             conn
             |> put_status(:not_found)

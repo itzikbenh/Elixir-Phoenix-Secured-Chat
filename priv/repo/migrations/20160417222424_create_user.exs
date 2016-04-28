@@ -10,6 +10,6 @@ defmodule ChatSecured.Repo.Migrations.CreateUser do
       timestamps
     end
     create unique_index(:users, [:email])
-    create unique_index(:users, [:username])
+    create unique_index(:users, ["lower(username)"], name: :users_username_index)
   end
 end

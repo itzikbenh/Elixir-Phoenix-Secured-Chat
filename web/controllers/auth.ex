@@ -34,7 +34,7 @@ defmodule ChatSecured.Auth do
   def logout(conn) do
     configure_session(conn, drop: true)
   end
-  @max_age 2 * 7 * 24 * 60 *60 # 14 days
+  @max_age 2 * 7 * 24 * 60 * 60 # 14 days
   defp put_current_user(conn, user) do
     token = Phoenix.Token.sign(conn, "user socket", user.id)
 
@@ -47,7 +47,7 @@ defmodule ChatSecured.Auth do
 
   def login_by_username_and_pass(conn, username, given_pass, opts) do
     repo = Keyword.fetch!(opts, :repo)
-    user = repo.get_by(Rumbl.User, username: username)
+    user = repo.get_by(ChatSecured.User, username: username)
 
     cond do
       user && checkpw(given_pass, user.password_hash) ->
@@ -77,6 +77,20 @@ defmodule ChatSecured.Auth do
     end
   end
 
+  #validate_password on request to update password
+  def validate_password(conn, user, given_pass) do
+    cond do
+      user && checkpw(given_pass, user.password_hash) ->
+        {:ok, user, conn}
+      user ->
+        {:error, :unauthorized, conn}
+      true ->
+        #Fake check if there is no user so it will return "not found"
+        dummy_checkpw()
+        {:error, :not_found, conn}
+    end
+  end
+
   import Phoenix.Controller
   alias ChatSecured.Router.Helpers
 
@@ -92,7 +106,7 @@ defmodule ChatSecured.Auth do
   end
 
   #If token is older than 14 days then verification would fail with reason-expired.
-  @max_age 2 * 7 * 24 * 60 *60 # 14 days
+  @max_age 2 * 7 * 24 * 60 * 60 # 14 days
 
   def verify_token_and_set_user(conn, _opts) do
     token = conn.params["token"]

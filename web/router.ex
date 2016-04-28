@@ -29,6 +29,7 @@ defmodule ChatSecured.Router do
     resources "/rooms", RoomController, except: [:new, :edit]
     resources "/users", UserController, except: [:new], param: "token"
     get "/verifytoken", UserController, :verify_token
+    patch "/users/updatepassword/:token", UserController, :update_password
     resources "/sessions", SessionController, only: [:create]
   end
 end
