@@ -8,6 +8,7 @@ defmodule ChatSecured.User do
     field :password_confirmation, :string, virtual: true #Intermediate field for confirming password
     field :password_hash, :string
     has_many :rooms, ChatSecured.Room
+    has_many :messages, ChatSecured.Message
 
     timestamps
   end
@@ -27,7 +28,6 @@ defmodule ChatSecured.User do
     |> validate_length(:username, min: 3, max: 20, message: "should be at least 3 characters")
     |> validate_length(:email, min: 3, max: 40, message: "should be at least 3 characters")
     |> update_change(:email, &String.downcase/1) #downcase email before insert
-    #|> update_change(:username, &String.downcase/1) #downcase username before insert
     |> validate_format(:email, ~r/\A[\w+\-.]+@[a-z\-.]+\.[a-z]+\z/i)
     |> unique_constraint(:email) #If not unique returns an error after fail DB insert
     |> unique_constraint(:username) #If not unique returns an error after fail DB insert

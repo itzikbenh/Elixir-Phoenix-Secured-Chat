@@ -1,5 +1,6 @@
 defmodule ChatSecured.Api.RoomController do
   use ChatSecured.Web, :controller
+  plug :verify_token_and_set_user when action in [:create]
 
   alias ChatSecured.Room
 
@@ -10,14 +11,18 @@ defmodule ChatSecured.Api.RoomController do
     render(conn, "index.json", rooms: rooms)
   end
 
-  def create(conn, %{"room" => room_params}) do
-    changeset = Room.changeset(%Room{}, room_params)
+  def create(conn, %{"token" => token, "room" => room_params}) do
+    #changeset = Room.changeset(%Room{}, room_params)
+    user = conn.assigns[:current_user]
+    changeset =
+      user
+      |> build_assoc(:rooms)
+      |> Room.changeset(room_params)
 
     case Repo.insert(changeset) do
       {:ok, room} ->
         conn
         |> put_status(:created)
-        |> put_resp_header("location", room_path(conn, :show, room))
         |> render("show.json", room: room)
       {:error, changeset} ->
         conn

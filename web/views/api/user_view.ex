@@ -6,6 +6,10 @@ defmodule ChatSecured.Api.UserView do
     %{username: user.username, email: user.email, token: token}
   end
 
+  def render("usersocket.json", %{user: user}) do
+    %{username: user.username}
+  end
+
   def render("edit.json", %{user: user}) do
     %{email: user.email, username: user.username}
   end

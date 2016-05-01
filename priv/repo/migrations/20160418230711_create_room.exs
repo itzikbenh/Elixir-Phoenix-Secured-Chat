@@ -9,6 +9,6 @@ defmodule ChatSecured.Repo.Migrations.CreateRoom do
       timestamps
     end
     create index(:rooms, [:user_id])
-
+    create unique_index(:rooms, ["lower(name)"], name: :rooms_name_index)
   end
 end

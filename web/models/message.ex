@@ -1,15 +1,15 @@
-defmodule ChatSecured.Room do
+defmodule ChatSecured.Message do
   use ChatSecured.Web, :model
 
-  schema "rooms" do
-    field :name, :string
+  schema "messages" do
+    field :body, :string
     belongs_to :user, ChatSecured.User
-    has_many :messages, ChatSecured.Message
+    belongs_to :room, ChatSecured.Room
 
     timestamps
   end
 
-  @required_fields ~w(name)
+  @required_fields ~w(body)
   @optional_fields ~w()
 
   @doc """
@@ -21,7 +21,5 @@ defmodule ChatSecured.Room do
   def changeset(model, params \\ :empty) do
     model
     |> cast(params, @required_fields, @optional_fields)
-    |> update_change(:name, &String.downcase/1) #downcase name before insert
-    |> unique_constraint(:name)
   end
 end

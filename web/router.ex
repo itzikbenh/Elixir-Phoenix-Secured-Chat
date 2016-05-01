@@ -26,9 +26,9 @@ defmodule ChatSecured.Router do
   scope "/api", ChatSecured.Api do
     pipe_through :api
 
-    resources "/rooms", RoomController, except: [:new, :edit]
+    resources "/rooms", RoomController, except: [:new, :edit], param: "token"
     resources "/users", UserController, except: [:new], param: "token"
-    get "/verifytoken", UserController, :verify_token
+    get "/verifytoken/:token", UserController, :verify_token
     patch "/users/updatepassword/:token", UserController, :update_password
     resources "/sessions", SessionController, only: [:create]
   end
