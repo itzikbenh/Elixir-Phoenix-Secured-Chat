@@ -6,22 +6,6 @@ defmodule ChatSecured.UserSocket do
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket
-  # transport :longpoll, Phoenix.Transports.LongPoll
-
-  # Socket params are passed from the client and can
-  # be used to verify and authenticate a user. After
-  # verification, you can put default assigns into
-  # the socket that will be set for all channels, ie
-  #
-  #     {:ok, assign(socket, :user_id, verified_user_id)}
-  #
-  # To deny connection, return `:error`.
-  #
-  # See `Phoenix.Token` documentation for examples in
-  # performing token verification on connect.
-  # def connect(_params, socket) do
-  #   {:ok, socket}
-  # end
 
   @max_age 2 * 7 * 24 * 60 * 60
   def connect(%{"token" => token}, socket) do
@@ -33,6 +17,7 @@ defmodule ChatSecured.UserSocket do
     end
   end
 
+  #If something went wrong this function would return an error.
   def connect(_params, _socket), do: :error
 
   # Socket id's are topics that allow you to identify all sockets for a given user:

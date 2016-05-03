@@ -3,9 +3,10 @@ defmodule ChatSecured.Api.UserView do
   alias ChatSecured.User
 
   def render("user.json", %{token: token, user: user}) do
-    %{username: user.username, email: user.email, token: token}
+    %{id: user.id, username: user.username, token: token}
   end
-
+  #On new message from the socket channel we will render the username only.
+  #This is why we need this extra function
   def render("usersocket.json", %{user: user}) do
     %{username: user.username}
   end
@@ -15,10 +16,10 @@ defmodule ChatSecured.Api.UserView do
   end
 
   def render("update.json", %{user: user}) do
-    %{username: user.username, email: user.email, flash: "Account has been updated successfully"}
+    %{id: user.id, username: user.username, flash: "Account has been updated successfully"}
   end
 
   def render("update_password.json", %{user: user}) do
-    %{username: user.username, flash: "Password has been updated successfully"}
+    %{flash: "Password has been updated successfully"}
   end
 end

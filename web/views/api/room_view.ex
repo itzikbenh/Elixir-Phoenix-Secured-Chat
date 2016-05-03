@@ -10,8 +10,7 @@ defmodule ChatSecured.Api.RoomView do
   end
 
   def render("room.json", %{room: room}) do
-    %{id: room.id,
-      name: room.name,
+    %{name: room.name,
       user_id: room.user_id}
   end
 end

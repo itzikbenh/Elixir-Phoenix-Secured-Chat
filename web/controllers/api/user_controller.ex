@@ -5,17 +5,10 @@ defmodule ChatSecured.Api.UserController do
 
   alias ChatSecured.User
 
-  def index(conn, _params) do
-    users = Repo.all(User)
-    render conn, "index.html", users: users
-  end
-
-  #Through pattern matching we will fetch the ID param
-  #In this case on ID "1" it will be ->  %{"id" => id} = %{"id" =>  "1"} which will make id=1
-  def show(conn, %{"id" => id}) do
-    user = Repo.get(User, id)
-    render conn, "show.html", user: user
-  end
+  #NOTICE - all the views that we render here are expected to be in the format of:
+  #"ChatSecured.Api.UserView", except those we specified to be different. E.G. "ChatSecured.ChangesetView".
+  #These are all JSON view so they just render the data so it can be sent to the client
+  #there is not real htmk view rendered here since this controller only serves the API client.
 
   #This is how the parameters might look like
   #"user" => %{"name" => "Johnny", "password" => "[FILTERED]", "username" => "JohnnyCage"}}
@@ -81,7 +74,7 @@ defmodule ChatSecured.Api.UserController do
         |> text("invalid password")
     end
   end
-
+  #This function is not used, but I'm leaving it just in case you want to implement it.
   def delete(conn, %{"token" => token}) do
     user = conn.assigns[:current_user]
     #bang will raise an error incase of a problem

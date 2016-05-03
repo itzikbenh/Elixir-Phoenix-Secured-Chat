@@ -1,9 +1,16 @@
 #This is a module Plug
 #Module Plugs provides two functions with some configuration details.
 #A typical Plug transofrms a collection
+
+#NOTICE - This file can also server the regular website that does HTTP request.
+#FOr our React API clent we only use the following functions:
+# "login_by_email_and_pass_api" -> When user try to login.
+# "validate_password" -> when user tries to update his password we will first validate his current one. Being called from session controller
+# "verify_token_and_set_user" -> Verifies users token and set the user to the assign so we can easily fetch it from the controller
+
 defmodule ChatSecured.Auth do
   import Plug.Conn
-  import Comeonin.Bcrypt, only: [checkpw: 2, dummy_checkpw: 0]
+  import Comeonin.Bcrypt, only: [checkpw: 2, dummy_checkpw: 0] #Library that helps with validating/hashing passwords.
 
   #Happens at compile time. Plug will use the result of init as the second argument to call.
   def init(opts) do
@@ -121,13 +128,13 @@ defmodule ChatSecured.Auth do
             conn
             |> put_status(:not_found)
             |> text("User not found")
-            |> halt() #We wnat to stop everything on error. Otherwise it will to the action which is bad.
+            |> halt() #We want to stop everything on error. Otherwise it will to the action which is bad.
         end
       {:error, _reason} ->
         conn
         |> put_status(:not_acceptable)
         |> text("token failed verification")
-        |> halt() #We wnat to stop everything on error. Otherwise it will to the action which is bad.
+        |> halt() #We want to stop everything on error. Otherwise it will to the action which is bad.
     end
   end
 end

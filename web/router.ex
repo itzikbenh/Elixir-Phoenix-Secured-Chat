@@ -22,12 +22,11 @@ defmodule ChatSecured.Router do
     resources "/sessions", SessionController, only: [:new, :create, :delete]
   end
 
-  #Other scopes may use custom stacks.
   scope "/api", ChatSecured.Api do
     pipe_through :api
 
-    resources "/rooms", RoomController, except: [:new, :edit], param: "token"
-    resources "/users", UserController, except: [:new], param: "token"
+    resources "/rooms", RoomController, except: [:new, :edit, :show], param: "token"
+    resources "/users", UserController, except: [:index, :show, :new], param: "token"
     get "/verifytoken/:token", UserController, :verify_token
     patch "/users/updatepassword/:token", UserController, :update_password
     resources "/sessions", SessionController, only: [:create]

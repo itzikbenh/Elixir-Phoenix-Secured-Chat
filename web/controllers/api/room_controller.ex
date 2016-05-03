@@ -1,11 +1,15 @@
 defmodule ChatSecured.Api.RoomController do
   use ChatSecured.Web, :controller
-  plug :verify_token_and_set_user when action in [:create]
+  #This plug is set at "auth.ex" file. We made it availabe through the "web.ex" file.
+  plug :verify_token_and_set_user when action in [:create, :delete]
 
   alias ChatSecured.Room
-
+  #Will turn empty strings into nil so it will raise an error in case they are required.
   plug :scrub_params, "room" when action in [:create, :update]
-
+  #NOTICE - all the views that we render here are expected to be in the format of:
+  #"ChatSecured.Api.RoomView", except those we specified to be different. E.G. "ChatSecured.ChangesetView".
+  #These are all JSON view so they just render the data so it can be sent to the client
+  #there is not real htmk view rendered here since this controller only serves the API client.
   def index(conn, _params) do
     rooms = Repo.all(Room)
     render(conn, "index.json", rooms: rooms)
@@ -31,11 +35,6 @@ defmodule ChatSecured.Api.RoomController do
     end
   end
 
-  def show(conn, %{"id" => id}) do
-    room = Repo.get!(Room, id)
-    render(conn, "show.json", room: room)
-  end
-
   def update(conn, %{"id" => id, "room" => room_params}) do
     room = Repo.get!(Room, id)
     changeset = Room.changeset(room, room_params)
@@ -50,8 +49,8 @@ defmodule ChatSecured.Api.RoomController do
     end
   end
 
-  def delete(conn, %{"id" => id}) do
-    room = Repo.get!(Room, id)
+  def delete(conn, %{"token" => token, "room" => room_params}) do
+    room = Repo.get_by!(Room, name: room_params["name"])
 
     # Here we use delete! (with a bang) because we expect
     # it to always work (and if it does not, it will raise).

@@ -3,24 +3,18 @@ defmodule ChatSecured.RoomChannel do
   alias ChatSecured.Api.MessageView
 
   def join("rooms:" <> room_name, _params, socket) do
-    #video_id = String.to_integer(video_id)
     room = Repo.get_by!(ChatSecured.Room, name: room_name)
 
+    #Loads messages that relate to this specific room.
     messages = Repo.all(
-      from a in assoc(room, :messages),
+      from a in assoc(room, :messages), #we must be explicit and mention that we want the messages that belongs to the room
         order_by: [asc: a.inserted_at],
         limit: 200,
-        preload: [:user]
+        preload: [:user] #loads the user that is associated with each message
     )
-
+    #
     resp = %{messages: Phoenix.View.render_many(messages, MessageView, "message.json")}
-    {:ok, resp, assign(socket, :room_id, room.id)}
-  end
-
-
-  def handle_in("disconnect", _params, socket) do
-    ChatSecured.Endpoint.broadcast("users_socket:#{socket.assigns.user_id}", "disconnect", %{})
-    {:noreply, socket}
+    {:ok, resp, assign(socket, :room_id, room.id)} #here we assign the room ID to the socket assign so we can use it later
   end
 
   def handle_in("new_msg", params, socket) do
@@ -28,13 +22,12 @@ defmodule ChatSecured.RoomChannel do
 
     changeset =
       user
-      |> build_assoc(:messages, room_id: socket.assigns.room_id)
+      |> build_assoc(:messages, room_id: socket.assigns.room_id) #equivalent to %Message{user_id: user.id, room_id: socket.assigns.room_id}
       |> ChatSecured.Message.changeset(params)
 
     case Repo.insert(changeset) do
       {:ok, message} ->
         broadcast! socket, "new_msg", %{
-          #id: annotation.id,
           user: ChatSecured.Api.UserView.render("usersocket.json", %{user: user}),
           body: message.body,
         }
