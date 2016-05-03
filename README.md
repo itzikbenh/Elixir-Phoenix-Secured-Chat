@@ -1,7 +1,7 @@
 This is a tutorial that shows how Elixir Phoenix serves as the backend for a React&Redux app. 
 Users can register to the app, create rooms and chat with other. 
 
-Here are the videos that shows how it works - https://www.youtube.com/playlist?list=PLkdLxQVsHYXyilY9ieZc_Slosb_lNE3eI
+See tutorial here - https://www.youtube.com/playlist?list=PLkdLxQVsHYXyilY9ieZc_Slosb_lNE3eI
 
 # ChatSecured
 
